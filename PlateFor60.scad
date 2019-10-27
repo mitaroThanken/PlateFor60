@@ -1,6 +1,8 @@
 use <Lib/dotSCAD/src/dotscad.scad>
+include <Lib/BOSL/constants.scad>
 use <Lib/BOSL/shapes.scad>
 use <Lib/BOSL/transforms.scad>
+use <Lib/BOSL/masks.scad>
 
 $fa = $preview ? 6 : 0.1;
 $fs = $preview ? 1 : 0.1;
@@ -59,19 +61,7 @@ mount_hole = 2.200;
 module plate() {
     up(thickness / 2)
         difference() {
-        /* 波板
-            xrot(90)
-                corrugated_wall(
-                    h=pcb_size[1],
-                    l=pcb_size[0],
-                    thick=thickness,
-                    strut=thickness / 2,
-                    orient=ORIENT_X,
-                    align=V_CENTER);
-        */
-        //* 平板
             cube(size=[pcb_size[0], pcb_size[1], thickness], center=true);
-        //*/
         
         // リセットスイッチの穴
         move([-1 * pcb_size[0] / 2 + 25.200 + 3.950, -1 * pcb_size[1] / 2 + 27.900 + 20.300, 0.00]) {
@@ -131,4 +121,26 @@ module plate() {
     }
 }
 
-plate();
+module filleted_plate() {
+    difference() {
+        plate();
+        place_copies([
+            [-1 * pcb_size[0] / 2, -1 * pcb_size[1] / 2, 0.00],
+            [     pcb_size[0] / 2, -1 * pcb_size[1] / 2, 0.00],
+            [-1 * pcb_size[0] / 2,      pcb_size[1] / 2, 0.00],
+            [     pcb_size[0] / 2,      pcb_size[1] / 2, 0.00],
+        ])
+            fillet_mask(
+                l=thickness * 2,
+                r=3.00,
+                orient=ORIENT_Z,
+                align=V_CENTER);
+    }
+}
+
+filleted_plate();
+
+/* レーザーカット用
+projection()
+    filleted_plate();
+//*/
